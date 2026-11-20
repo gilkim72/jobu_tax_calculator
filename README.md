@@ -5,7 +5,7 @@
 
 ![대표 이미지](og-image.png)
 
-**바로 사용하기:** https://USERNAME.github.io/REPO/
+**바로 사용하기:** https://gilkim72.github.io/jobu_tax_calculator/
 
 설치할 것 없이 `index.html` 파일 하나로 브라우저에서 작동합니다. 입력한 정보는 어디로도 전송되지 않습니다.
 
@@ -60,7 +60,7 @@
 
 1. 이 저장소에 `index.html`, `og-image.png`, `README.md`를 올립니다.
 2. 저장소 **Settings → Pages**에서 Source를 `Deploy from a branch`, Branch를 `main` / `(root)`로 고르고 Save를 누릅니다.
-3. 1~2분 뒤 `https://USERNAME.github.io/REPO/`에서 열립니다.
+3. 1~2분 뒤 `https://gilkim72.github.io/jobu_tax_calculator/`에서 열립니다.
 4. `index.html` 위쪽 `og:url`, `og:image`, `twitter:image`와 이 README의 `USERNAME/REPO`를 본인 주소로 바꿉니다. 카카오톡·SNS 미리보기 이미지는 이 절대주소가 있어야 나옵니다.
 
 ## 라이선스
