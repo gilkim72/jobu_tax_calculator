@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 종부세 계산기 — 부부 공동명의: 일반 vs 1주택자 특례</title>
+<meta name="description" content="2026년분 종합부동산세 계산기. 부부 공동명의 1주택의 일반 방식(1인당 9억 공제)과 1주택자 특례(12억 공제 + 고령자·장기보유 세액공제)를 비교하고, 다주택 세대의 주택별 명의·지분에 따른 종부세와 재산세를 계산합니다.">
+<!-- 아래 두 주소의 USERNAME/REPO를 본인 GitHub 주소로 바꾸세요 -->
+<meta property="og:url" content="https://USERNAME.github.io/REPO/">
+<meta property="og:image" content="https://USERNAME.github.io/REPO/og-image.png">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="2026 종합부동산세 계산기 — 부부 공동명의 일반 vs 1주택자 특례">
+<meta property="og:description" content="공동명의 일반 vs 1주택자 특례 비교, 다주택 주택별 지분 계산, 취득일로 보유기간 자동 계산">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="2026 종합부동산세 계산기">
+<meta name="twitter:description" content="부부 공동명의, 일반 vs 1주택자 특례 — 어느 쪽이 유리할까?">
+<meta name="twitter:image" content="https://USERNAME.github.io/REPO/og-image.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M7 23 L13 17 L18 20 L25 10' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f3ef; --surface:#fcfcfb; --line:#e3e1da; --grid:#ecebe5;
+  --text:#0b0b0b; --text2:#52514e; --muted:#8a8984;
+  --s1:#2a78d6; --s2:#eb6834; --good:#0ca30c; --accent-bg:#eef4fc;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#111110; --surface:#1a1a19; --line:#2e2e2c; --grid:#262624;
+    --text:#f0efec; --text2:#c3c2b7; --muted:#8f8e88; --s1:#3987e5; --s2:#d95926; --accent-bg:#1c2633; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',system-ui,sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:24px;margin:0 0 4px;letter-spacing:-.02em}
+.sub{color:var(--text2);margin:0 0 22px}
+.grid{display:grid;grid-template-columns:380px 1fr;gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card h2{font-size:15px;margin:0 0 12px;color:var(--text2);font-weight:500}
+.card h3{font-size:14px;margin:18px 0 6px}
+label{display:block;font-size:13px;color:var(--text2);margin:10px 0 4px}
+input[type=number],input[type=date],select{width:100%;padding:8px 10px;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)}
+input[type=range]{width:100%;accent-color:var(--s1)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.calc{font-size:12.5px;color:var(--text2);margin-top:4px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{font:inherit;font-size:14px;padding:9px 6px;border:0;background:var(--bg);color:var(--text2);cursor:pointer}
+.seg button.on{background:var(--s1);color:#fff;font-weight:500}
+.house{border:1px solid var(--line);border-radius:10px;padding:10px 12px 12px;margin-top:10px;background:var(--bg)}
+.house-h{display:flex;justify-content:space-between;align-items:center}
+.house-h b{font-size:14px}
+.rm{font:inherit;font-size:12.5px;border:0;background:none;color:var(--muted);cursor:pointer;padding:2px 4px}
+.rm:hover{color:var(--s2)}
+.add{width:100%;margin-top:10px;font:inherit;font-size:14px;padding:9px;border:1px dashed var(--muted);border-radius:10px;background:none;color:var(--text2);cursor:pointer}
+.add:hover{border-color:var(--s1);color:var(--s1)}
+.share-out{display:flex;justify-content:space-between;font-size:13px}
+.verdict{background:var(--accent-bg);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.verdict .big{font-size:21px;font-weight:700;letter-spacing:-.02em}
+.verdict .small{color:var(--text2);font-size:13.5px;margin-top:4px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.tiles.one{grid-template-columns:1fr}
+.tile{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface);position:relative}
+.tile.win{border:2px solid var(--good)}
+.tile .tag{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.tile .amt{font-size:26px;font-weight:700;margin:4px 0 2px;letter-spacing:-.02em}
+.tile .meta{font-size:12.5px;color:var(--muted)}
+.badge{position:absolute;top:10px;right:12px;font-size:12px;color:var(--good);font-weight:700}
+.flag{display:inline-block;font-size:11.5px;border:1px solid var(--s2);color:var(--s2);border-radius:999px;padding:0 7px;margin-left:6px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--grid);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;color:var(--text2)}
+thead th{color:var(--text2);font-weight:500;border-bottom:1px solid var(--line)}
+tr.sum td{font-weight:700;border-top:1px solid var(--line)}
+.tbl-wrap{overflow-x:auto}
+.chart-box{position:relative}
+svg text{font-family:inherit}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;box-shadow:0 4px 14px rgba(0,0,0,.12);display:none;min-width:170px}
+.tip .r{display:flex;justify-content:space-between;gap:14px}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--text2);margin:0 0 6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.notes{font-size:13px;color:var(--text2);padding-left:18px}
+.notes li{margin:4px 0}
+details summary{cursor:pointer;color:var(--text2);font-size:13px;margin-top:8px}
+.warn{border-left:3px solid var(--s2);padding:8px 12px;background:var(--bg);border-radius:0 8px 8px 0;font-size:13px;color:var(--text2);margin-top:12px}
+.sec{margin-top:18px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>2026 종합부동산세 계산기</h1>
+  <p class="sub">소유자·배우자 세대 기준. 1주택이면 <b>일반 공동명의(1인당 9억 공제)</b>와 <b>1주택자 특례(12억 공제 + 고령자·장기보유 세액공제)</b>를 비교하고, 다주택이면 주택별 명의·지분에 따라 사람별 종부세를 계산합니다. 과세기준일 2026년 6월 1일, 2026년 12월 납부분.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>1. 세대 정보</h2>
+      <div class="row2">
+        <div><label for="birthP">소유자 생년월일</label><input id="birthP" type="date" value="1964-05-10"><div class="calc" id="ageP"></div></div>
+        <div><label for="birthS">배우자 생년월일</label><input id="birthS" type="date" value="1967-08-20"><div class="calc" id="ageS"></div></div>
+      </div>
+      <div class="hint">고령자 세액공제는 2026년 6월 1일 현재 만 나이로 정해집니다.</div>
+
+      <h3>2. 세대 보유 주택 수</h3>
+      <div class="seg" id="modeSeg"><button data-m="one" class="on">1주택</button><button data-m="multi">다주택 (2채 이상)</button></div>
+      <div class="hint" id="modeHint">부부가 가진 주택이 한 채뿐인 경우입니다. 다른 세대원(자녀 등)이 주택을 갖고 있으면 다주택을 고르세요.</div>
+
+      <h3>3. 주택별 정보</h3>
+      <div id="houses"></div>
+      <button class="add hidden" id="addBtn">+ 주택 추가</button>
+    </div>
+
+    <div>
+      <div class="verdict" id="verdict"></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="card">
+        <h2 id="detailTitle">계산 내역 (단위: 만 원, 반올림)</h2>
+        <div class="tbl-wrap"><table id="detail"></table></div>
+        <div id="propBox"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card sec" id="chartCard">
+    <h2>공시가격별 비교 — 지금 입력한 나이·취득일·지분 그대로</h2>
+    <div class="legend"><span><span class="dot" style="background:var(--s1)"></span>일반 공동명의</span><span><span class="dot" style="background:var(--s2)"></span>1주택자 특례</span></div>
+    <div class="chart-box" id="chartBox"><svg id="chart" width="100%" height="320" role="img" aria-label="공시가격별 종부세 비교 차트"></svg><div class="tip" id="tip"></div></div>
+    <div class="hint" id="cross"></div>
+    <details><summary>표로 보기</summary><div class="tbl-wrap"><table id="sweepTbl"></table></div></details>
+  </div>
+
+  <div class="card sec">
+    <h2>보유기간은 이렇게 계산합니다</h2>
+    <ul class="notes">
+      <li>보유기간 = <b>취득일 → 2026년 6월 1일</b>까지 꽉 찬 햇수입니다. 5년·10년·15년을 6월 1일 당일까지 채워야 해당 공제율이 붙습니다. 예) 2021년 6월 1일 취득 → 5년(20%), 2021년 6월 2일 취득 → 4년 11개월(0%).</li>
+      <li>취득일은 보통 <b>잔금일과 등기접수일 중 빠른 날</b>입니다. 등기부등본 '접수일'을 넣으면 거의 맞습니다.</li>
+      <li>부부 공동명의 주택은 <b>부부 중 먼저 그 집을 산 사람의 최초 취득일</b>부터 셉니다. 남편이 2012년에 사서 2023년 8월에 아내에게 지분을 증여했다면 2012년이 기준이고, 2023년 8월은 기준이 아닙니다.</li>
+      <li>처음부터 2023년 8월에 부부가 함께 샀다면 2026년 6월 1일엔 2년 9개월이라 장기보유 공제가 없습니다. 2028년 8월에 5년이 차므로 <b>2029년 6월 1일분부터 20%</b>가 적용됩니다.</li>
+      <li>고령자·장기보유 세액공제는 <b>세대 1주택일 때만</b> 받습니다. 다주택 세대에서는 날짜를 넣어도 공제가 없습니다.</li>
+    </ul>
+  </div>
+
+  <div class="card sec">
+    <h2>계산 기준과 한계</h2>
+    <ul class="notes">
+      <li>종부세: 사람별로 지분만큼의 공시가격을 모두 더한 뒤 (합계 − 공제) × 60% = 과세표준. 공제는 1인당 9억, 단독명의 1세대 1주택자와 공동명의 특례는 12억입니다.</li>
+      <li>세율: 사람별 보유 주택 수 2채 이하는 0.5~2.7%. 3채 이상이면 과세표준 12억 초과 구간부터 2~5%가 적용됩니다. 공동소유 주택은 지분이 작아도 공동소유자 각자 1채로 셉니다.</li>
+      <li>재산세: 주택별로 계산합니다. 세대 1주택이면 공정시장가액비율 43~45%(9억 이하는 특례세율), 다주택이면 60%와 표준세율을 씁니다. 종부세 과표와 겹치는 재산세는 종부세에서 뺍니다.</li>
+      <li>세액공제(1주택만): 고령자 만 60세 20% · 65세 30% · 70세 40%, 장기보유 5년 20% · 10년 40% · 15년 50%, 합쳐서 최대 80%. 농어촌특별세는 종부세의 20%입니다.</li>
+      <li><b>반영하지 않은 것:</b> 세부담 상한(전년 보유세의 150%), 일시적 2주택·상속주택·지방 저가주택의 1주택 특례, 합산배제 임대주택, 다른 세대원(자녀 등) 명의 주택, 부속토지만 가진 경우. 실제 고지액은 홈택스 모의계산으로 꼭 확인하세요.</li>
+      <li>공동명의 특례 요건: 6월 1일 현재 부부만 공동으로 1주택을 갖고 있고 거주자여야 합니다. 신청 기간은 9월 16~30일입니다. 2026년부터는 지분과 관계없이 부부가 합의해 납세의무자를 고를 수 있어서, 계산기가 유리한 사람을 자동으로 고릅니다.</li>
+    </ul>
+    <div class="warn"><b>2027년부터 달라질 수 있음:</b> 정부가 2026년 8월 발표한 세제개편안에는 1주택 공제를 거주 14억·비거주 9억으로 나누고, 다주택 공제를 '4억 + 5억 × 거주주택 비중'으로 바꾸고, 공정시장가액비율을 올리고, 주택 수 대신 가액 기준 세율을 쓰는 안이 담겼습니다. 국회를 통과하면 2027년분부터 적용되므로, 이 계산 결과는 2026년분에만 해당합니다.</div>
+  </div>
+</div>
+
+<script>
+// 2026년 귀속 주택분 종합부동산세 계산 엔진 — 부부(소유자·배우자) 세대, 1주택/다주택
+const BASE_DATE = new Date(2026, 5, 1); // 과세기준일 2026-06-01
+function prog(base, br) {
+  let tax = 0, prev = 0;
+  for (const [up, r] of br) { if (base <= prev) break; tax += (Math.min(base, up) - prev) * r; prev = up; }
+  return tax;
+}
+function marginal(base, br) { for (const [up, r] of br) if (base <= up) return r; return br[br.length - 1][1]; }
+const JONG = [[3e8, .005], [6e8, .007], [12e8, .01], [25e8, .013], [50e8, .015], [94e8, .02], [Infinity, .027]];
+const JONG_HEAVY = [[3e8, .005], [6e8, .007], [12e8, .01], [25e8, .02], [50e8, .03], [94e8, .04], [Infinity, .05]];
+const PROP_STD = [[6e7, .001], [1.5e8, .0015], [3e8, .0025], [Infinity, .004]];
+const PROP_SP = [[6e7, .0005], [1.5e8, .001], [3e8, .002], [Infinity, .0035]];
+const JONG_FMV = 0.6;
+function oneHouseFMV(p) { return p <= 3e8 ? .43 : p <= 6e8 ? .44 : .45; }
+function ageRate(a) { return a >= 70 ? .4 : a >= 65 ? .3 : a >= 60 ? .2 : 0; }
+function holdRate(y) { return y >= 15 ? .5 : y >= 10 ? .4 : y >= 5 ? .2 : 0; }
+
+// 기준일 현재 만 경과 연·월 (생일·취득일 기준)
+function elapsed(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d) || d > BASE_DATE) return d > BASE_DATE ? { y: 0, m: 0, future: true } : null;
+  let months = (BASE_DATE.getFullYear() - d.getFullYear()) * 12 + (BASE_DATE.getMonth() - d.getMonth());
+  if (BASE_DATE.getDate() < d.getDate()) months -= 1;
+  return { y: Math.floor(months / 12), m: months % 12 };
+}
+
+// 주택 한 채의 재산세 (oneHouse: 세대 1주택 특례 적용 여부)
+function propertyTax(price, oneHouse) {
+  const fmv = oneHouse ? oneHouseFMV(price) : 0.6, base = price * fmv;
+  const std = prog(base, PROP_STD);
+  const actual = oneHouse && price <= 9e8 ? prog(base, PROP_SP) : std;
+  const city = base * 0.0014, edu = actual * 0.2;
+  return { fmv, base, std, actual, city, edu, total: actual + city + edu };
+}
+
+// 한 사람의 종부세. holdings: [{price, share, prop}], D: 기본공제, cr: 세액공제율
+function personTax(holdings, D, cr, count) {
+  const A = holdings.reduce((s, h) => s + h.price * h.share, 0);
+  const heavy = count >= 3;
+  const table = heavy ? JONG_HEAVY : JONG;
+  const taxBase = Math.max(0, (A - D) * JONG_FMV);
+  const calc = prog(taxBase, table);
+  // 재산세 중복분: 종부세 과표에 해당하는 재산세 상당액(표준세율 0.4%) × (실제 재산세 / 표준세율 재산세)
+  const propActual = holdings.reduce((s, h) => s + h.prop.actual * h.share, 0);
+  const propStd = holdings.reduce((s, h) => s + h.prop.std * h.share, 0);
+  const fmvP = A > 0 ? holdings.reduce((s, h) => s + h.prop.fmv * h.price * h.share, 0) / A : 0.6;
+  const overlapPropBase = Math.max(0, A - D) * JONG_FMV * fmvP;
+  let offset = propStd > 0 ? overlapPropBase * 0.004 * (propActual / propStd) : 0;
+  offset = Math.min(offset, propActual, calc);
+  const afterOffset = calc - offset, credit = afterOffset * cr;
+  const jong = Math.max(0, afterOffset - credit), rural = jong * 0.2;
+  return { A, D, count, heavy, taxBase, rate: marginal(taxBase, table), calc, offset, cr, credit, jong, rural, total: jong + rural, propActual };
+}
+
+// input: { persons:{P:{birth},S:{birth}}, houses:[{price, owner:'P'|'S'|'J', shareP(0~1), acq}] }
+function compute(input) {
+  const houses = input.houses.filter(h => h.price > 0 && !((elapsed(h.acq) || {}).future));
+  const n = houses.length, oneHouse = n === 1;
+  const hs = houses.map((h, i) => {
+    const prop = propertyTax(h.price, oneHouse);
+    const sP = h.owner === 'P' ? 1 : h.owner === 'S' ? 0 : h.shareP;
+    const hold = elapsed(h.acq);
+    return Object.assign({}, h, { idx: i, prop, sP, sS: 1 - sP, hold });
+  });
+  const age = k => { const e = elapsed(input.persons[k].birth); return e ? e.y : 0; };
+  const ages = { P: age('P'), S: age('S') };
+  const holdingsOf = k => hs.filter(h => (k === 'P' ? h.sP : h.sS) > 0).map(h => ({ price: h.price, share: k === 'P' ? h.sP : h.sS, prop: h.prop, idx: h.idx }));
+  const propTotal = hs.reduce((s, h) => s + h.prop.total, 0);
+  const res = { n, houses: hs, ages, propTotal };
+
+  if (n === 0) { res.kind = 'none'; return res; }
+  if (oneHouse && hs[0].owner !== 'J') { // 단독명의 1세대 1주택
+    const k = hs[0].owner, h = hs[0], hy = h.hold ? h.hold.y : 0;
+    const ar = ageRate(ages[k]), hr = holdRate(hy), cr = Math.min(.8, ar + hr);
+    const t = Object.assign(personTax(holdingsOf(k), 12e8, cr, 1), { ar, hr, who: k });
+    res.kind = 'single'; res.owner = k; res.result = t; res.total = t.total; return res;
+  }
+  if (oneHouse) { // 부부 공동명의 1주택: 일반 vs 특례
+    const h = hs[0], hy = h.hold ? h.hold.y : 0;
+    const gP = personTax(holdingsOf('P'), 9e8, 0, 1), gS = personTax(holdingsOf('S'), 9e8, 0, 1);
+    const general = { persons: { P: gP, S: gS }, total: gP.total + gS.total, jong: gP.jong + gS.jong, rural: gP.rural + gS.rural };
+    const opts = ['P', 'S'].map(k => {
+      const ar = ageRate(ages[k]), hr = holdRate(hy), cr = Math.min(.8, ar + hr);
+      return Object.assign(personTax([{ price: h.price, share: 1, prop: h.prop }], 12e8, cr, 1), { ar, hr, who: k });
+    });
+    const special = opts[0].total <= opts[1].total ? opts[0] : opts[1];
+    res.kind = 'joint1'; res.general = general; res.special = special; res.diff = general.total - special.total; return res;
+  }
+  // 다주택 세대: 인별 9억 공제, 세액공제 없음, 인별 주택 수 3채 이상이면 중과세율
+  const persons = {};
+  for (const k of ['P', 'S']) {
+    const hl = holdingsOf(k);
+    persons[k] = Object.assign(personTax(hl, 9e8, 0, hl.length), { houses: hl.map(x => x.idx) });
+  }
+  res.kind = 'multi'; res.persons = persons; res.total = persons.P.total + persons.S.total;
+  return res;
+}
+
+
+const $ = id => document.getElementById(id);
+const man = x => Math.round(x / 1e4).toLocaleString('ko-KR') + '만 원';
+const manN = x => Math.round(x / 1e4).toLocaleString('ko-KR');
+const eok = x => (x / 1e8).toLocaleString('ko-KR', {maximumFractionDigits: 2}) + '억';
+const pct = r => (r * 100).toFixed(1).replace(/\.0$/, '') + '%';
+const NAME = {P: '소유자', S: '배우자'};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+let mode = 'one';
+let houses = [{price: 25, owner: 'J', shareP: 50, acq: '2015-03-15'}];
+let multiBackup = null;
+
+function houseHTML(h, i) {
+  const multi = mode === 'multi';
+  return `<div class="house" data-i="${i}">
+    <div class="house-h"><b>${multi ? '주택 ' + (i + 1) : '보유 주택'}</b>${multi && houses.length > 1 ? `<button class="rm" data-rm="${i}">삭제</button>` : ''}</div>
+    <div class="row2">
+      <div><label>공시가격 (억 원)</label><input type="number" min="0" step="0.1" data-f="price" value="${h.price}"></div>
+      <div><label>명의</label><select data-f="owner">
+        <option value="P"${h.owner === 'P' ? ' selected' : ''}>소유자 단독</option>
+        <option value="S"${h.owner === 'S' ? ' selected' : ''}>배우자 단독</option>
+        <option value="J"${h.owner === 'J' ? ' selected' : ''}>부부 공동명의</option></select></div>
+    </div>
+    <div class="${h.owner === 'J' ? '' : 'hidden'}">
+      <label>지분 비율</label><input type="range" min="1" max="99" step="1" data-f="shareP" value="${h.shareP}">
+      <div class="share-out"><span>소유자 <b>${h.shareP}</b>%</span><span>배우자 <b>${100 - h.shareP}</b>%</span></div>
+    </div>
+    <label>${h.owner === 'J' ? '최초 취득일 (부부 중 먼저 산 날)' : '취득일 (등기접수일)'}</label>
+    <input type="date" data-f="acq" value="${h.acq || ''}">
+    <div class="calc" data-hold></div>
+  </div>`;
+}
+function drawHouses() {
+  $('houses').innerHTML = houses.map(houseHTML).join('');
+  $('addBtn').classList.toggle('hidden', mode !== 'multi');
+}
+$('houses').addEventListener('input', e => {
+  const el = e.target, box = el.closest('.house'); if (!box || !el.dataset.f) return;
+  const h = houses[+box.dataset.i], f = el.dataset.f;
+  h[f] = f === 'price' || f === 'shareP' ? parseFloat(el.value) || 0 : el.value;
+  if (f === 'shareP') { const b = box.querySelectorAll('.share-out b'); b[0].textContent = h.shareP; b[1].textContent = 100 - h.shareP; }
+  if (f === 'owner') drawHouses();
+  render();
+});
+$('houses').addEventListener('click', e => { const i = e.target.dataset.rm; if (i === undefined) return; houses.splice(+i, 1); drawHouses(); render(); });
+$('addBtn').onclick = () => { houses.push({price: 8, owner: 'P', shareP: 50, acq: '2020-01-10'}); drawHouses(); render(); };
+$('modeSeg').onclick = e => {
+  const m = e.target.dataset.m; if (!m || m === mode) return;
+  mode = m; [...$('modeSeg').children].forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  if (m === 'one') { multiBackup = houses; houses = [houses[0]]; }
+  else { houses = multiBackup && multiBackup.length > 1 ? multiBackup : [houses[0], {price: 8, owner: 'P', shareP: 50, acq: '2020-01-10'}]; }
+  $('modeHint').textContent = m === 'one' ? '부부가 가진 주택이 한 채뿐인 경우입니다. 다른 세대원(자녀 등)이 주택을 갖고 있으면 다주택을 고르세요.'
+    : '세대(소유자·배우자)가 가진 주택을 모두 넣으세요. 한 채만 공동명의이고 나머지는 단독명의인 경우처럼 주택마다 명의와 지분을 따로 정할 수 있습니다.';
+  drawHouses(); render();
+};
+['birthP', 'birthS'].forEach(id => $(id).addEventListener('input', render));
+
+function input(override) {
+  return { persons: {P: {birth: $('birthP').value}, S: {birth: $('birthS').value}},
+    houses: houses.map(h => ({price: (h.price || 0) * 1e8, owner: h.owner, shareP: h.shareP / 100, acq: h.acq})).map((h, i) => override && i === 0 ? Object.assign(h, override) : h) };
+}
+function holdText(e) { return e ? (e.future ? '기준일 이후 취득 — 2026년분 과세 대상 아님' : `6/1 기준 보유 ${e.y}년 ${e.m}개월`) : '취득일을 넣으면 보유기간이 계산됩니다'; }
+
+function render() {
+  const r = compute(input());
+  ['P', 'S'].forEach(k => { const e = elapsed($('birth' + k).value); $('age' + k).textContent = e ? `6/1 기준 만 ${e.y}세 → 고령자 ${pct(ageRate(e.y))}` : ''; });
+  document.querySelectorAll('.house').forEach((box, i) => {
+    const e = elapsed(houses[i].acq);
+    const rate = mode === 'one' && e && !e.future ? ` → 장기보유 ${pct(holdRate(e.y))}` : (mode === 'multi' && e && !e.future ? ' (다주택은 세액공제 없음)' : '');
+    box.querySelector('[data-hold]').textContent = holdText(e) + rate;
+  });
+  const v = $('verdict'), tiles = $('tiles');
+  $('chartCard').classList.toggle('hidden', r.kind !== 'joint1');
+  if (r.kind === 'none') { v.innerHTML = '<div class="big">주택 공시가격을 입력하세요</div>'; tiles.innerHTML = ''; $('detail').innerHTML = ''; $('propBox').innerHTML = ''; return; }
+  if (r.kind === 'joint1') renderJoint(r); else if (r.kind === 'single') renderSingle(r); else renderMulti(r);
+  renderProp(r);
+}
+
+function tile(color, label, amt, meta, win, extra) {
+  return `<div class="tile${win ? ' win' : ''}">${win ? '<span class="badge">✓ 유리</span>' : ''}<div class="tag">${color ? `<span class="dot" style="background:${color}"></span>` : ''}${label}${extra || ''}</div><div class="amt">${man(amt)}</div><div class="meta">${meta}</div></div>`;
+}
+const T = (head, rows, sums) => `<thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>` +
+  rows.map(x => `<tr>${x.map(c => `<td>${c}</td>`).join('')}</tr>`).join('') + (sums || '') + '</tbody>';
+function personRows(list, credits) {
+  const rows = [
+    ['보유 주택 수 (본인 기준)', ...list.map(p => p.count + '채' + (p.heavy ? ' · 중과' : ''))],
+    ['공시가격 합계 (지분분)', ...list.map(p => eok(p.A))],
+    ['기본공제', ...list.map(p => eok(p.D))],
+    ['과세표준 (×60%)', ...list.map(p => manN(p.taxBase))],
+    ['적용 최고세율', ...list.map(p => p.taxBase ? pct(p.rate) : '-')],
+    ['산출세액', ...list.map(p => manN(p.calc))],
+    ['(−) 재산세 중복분', ...list.map(p => manN(p.offset))],
+  ];
+  if (credits) rows.push(['세액공제율 (고령+장기)', ...list.map(p => p.cr ? `${pct(p.cr)} (${pct(p.ar)}+${pct(p.hr)})` : '-')], ['(−) 세액공제', ...list.map(p => manN(p.credit))]);
+  rows.push(['종부세', ...list.map(p => manN(p.jong))], ['농어촌특별세 (20%)', ...list.map(p => manN(p.rural))]);
+  return rows;
+}
+
+function renderJoint(r) {
+  const g = r.general, s = r.special, v = $('verdict');
+  const winSp = s.total < g.total - 0.5, tie = Math.abs(g.total - s.total) < 0.5, who = NAME[s.who];
+  if (g.total === 0 && s.total === 0) v.innerHTML = '<div class="big">두 방식 모두 종부세가 없습니다</div><div class="small">공시가격 12억 이하이고, 부부 각자의 지분가액이 9억 이하입니다.</div>';
+  else if (tie) v.innerHTML = '<div class="big">두 방식의 세액이 같습니다</div>';
+  else if (winSp) v.innerHTML = `<div class="big">1주택자 특례가 연 ${man(g.total - s.total)} 유리합니다</div><div class="small">${who}를 납세의무자로 신청하면 세액공제 ${pct(s.cr)}가 적용됩니다. 특례는 9월 16~30일에 신청해야 반영됩니다.</div>`;
+  else v.innerHTML = `<div class="big">일반 공동명의가 연 ${man(s.total - g.total)} 유리합니다</div><div class="small">특례를 신청하지 않으면 됩니다. 이미 신청했다면 9월 신청 기간에 변동(철회) 신고를 하세요.</div>`;
+  $('tiles').className = 'tiles';
+  $('tiles').innerHTML = tile('var(--s1)', '일반 공동명의 (부부 합계)', g.total, `종부세 ${man(g.jong)} + 농특세 ${man(g.rural)}`, !tie && !winSp && g.total > 0) +
+    tile('var(--s2)', '1주택자 특례', s.total, `종부세 ${man(s.jong)} + 농특세 ${man(s.rural)} · 납세의무자 ${who}`, !tie && winSp);
+  const P = g.persons.P, S = g.persons.S;
+  const rows = personRows([P, S, s], true).filter(x => x[0] !== '보유 주택 수 (본인 기준)');
+  $('detail').innerHTML = T(['항목 (만 원)', '일반 · 소유자', '일반 · 배우자', `특례 · ${who}`], rows,
+    `<tr class="sum"><td>종부세 합계</td><td colspan="2">${manN(g.total)}</td><td>${manN(s.total)}</td></tr>` +
+    `<tr class="sum"><td>재산세 등 포함 연간 보유세</td><td colspan="2">${manN(g.total + r.propTotal)}</td><td>${manN(s.total + r.propTotal)}</td></tr>`);
+  drawChart();
+}
+
+function renderSingle(r) {
+  const t = r.result, k = r.owner;
+  $('verdict').innerHTML = t.total > 0
+    ? `<div class="big">1세대 1주택자 종부세 연 ${man(t.total)}</div><div class="small">${NAME[k]} 단독명의라 12억 공제와 세액공제 ${pct(t.cr)}가 적용됩니다. 공동명의가 아니므로 특례 비교 대상이 아닙니다.</div>`
+    : `<div class="big">종부세가 없습니다</div><div class="small">단독명의 1세대 1주택은 공시가격 12억까지 공제됩니다.</div>`;
+  $('tiles').className = 'tiles one';
+  $('tiles').innerHTML = tile('', `${NAME[k]} (1세대 1주택자)`, t.total, `종부세 ${man(t.jong)} + 농특세 ${man(t.rural)} · 재산세 등 포함 연간 보유세 ${man(t.total + r.propTotal)}`, false);
+  $('detail').innerHTML = T(['항목 (만 원)', NAME[k]], personRows([t], true).filter(x => x[0] !== '보유 주택 수 (본인 기준)'));
+}
+
+function renderMulti(r) {
+  const P = r.persons.P, S = r.persons.S;
+  const heavyAny = P.heavy || S.heavy;
+  $('verdict').innerHTML = `<div class="big">세대 종부세 합계 연 ${man(r.total)}</div><div class="small">다주택 세대라 사람별 9억 공제만 받고 고령자·장기보유 세액공제와 공동명의 특례는 받을 수 없습니다.${heavyAny ? ' 주택 3채 이상을 가진 사람은 과세표준 12억 초과분에 중과세율(2~5%)이 붙습니다.' : ''}</div>`;
+  $('tiles').className = 'tiles';
+  const meta = p => p.count ? `${p.count}채 보유 · 종부세 ${man(p.jong)} + 농특세 ${man(p.rural)}` : '보유 주택 없음';
+  $('tiles').innerHTML = tile('var(--s1)', '소유자', P.total, meta(P), false, P.heavy ? '<span class="flag">3채 이상</span>' : '') +
+    tile('var(--s2)', '배우자', S.total, meta(S), false, S.heavy ? '<span class="flag">3채 이상</span>' : '');
+  $('detail').innerHTML = T(['항목 (만 원)', '소유자', '배우자'], personRows([P, S], false),
+    `<tr class="sum"><td>세대 종부세 합계</td><td colspan="2">${manN(r.total)}</td></tr><tr class="sum"><td>재산세 등 포함 연간 보유세</td><td colspan="2">${manN(r.total + r.propTotal)}</td></tr>`);
+}
+
+function renderProp(r) {
+  const rows = r.houses.map(h => [r.n > 1 ? `주택 ${h.idx + 1}` : '보유 주택', eok(h.price), h.owner === 'J' ? `공동 ${Math.round(h.sP * 100)}:${Math.round(h.sS * 100)}` : NAME[h.owner] + ' 단독', pct(h.prop.fmv), manN(h.prop.actual), manN(h.prop.city + h.prop.edu), manN(h.prop.total)]);
+  $('propBox').innerHTML = `<h3 style="margin-top:20px;color:var(--text2);font-weight:500;font-size:14px">참고: 주택별 재산세 (7·9월 납부, 단위 만 원)</h3><div class="tbl-wrap"><table>` +
+    T(['주택', '공시가격', '명의', '공정시장가액비율', '재산세', '도시지역분+지방교육세', '합계'], rows, `<tr class="sum"><td>합계</td><td colspan="5"></td><td>${manN(r.propTotal)}</td></tr>`) + '</table></div>';
+}
+
+function drawChart() {
+  const svg = $('chart'), box = $('chartBox');
+  const W = box.clientWidth, H = 320, m = {l: 64, r: 70, t: 14, b: 36};
+  const xs = []; for (let x = 10; x <= 60; x += 0.5) xs.push(x);
+  const data = xs.map(x => { const r = compute(input({price: x * 1e8})); return {x, g: r.general.total / 1e4, s: r.special.total / 1e4}; });
+  const ymaxRaw = Math.max(...data.map(d => Math.max(d.g, d.s)), 10);
+  const step = niceStep(ymaxRaw / 4), ymax = Math.ceil(ymaxRaw / step) * step;
+  const X = x => m.l + (x - 10) / 50 * (W - m.l - m.r), Y = y => H - m.b - y / ymax * (H - m.t - m.b);
+  let h = '';
+  for (let y = 0; y <= ymax + 1e-9; y += step) h += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(y)}" y2="${Y(y)}" stroke="var(--grid)"/><text x="${m.l - 8}" y="${Y(y) + 4}" text-anchor="end" font-size="11.5" fill="var(--muted)">${y.toLocaleString('ko-KR')}</text>`;
+  for (let x = 10; x <= 60; x += 10) h += `<text x="${X(x)}" y="${H - m.b + 18}" text-anchor="middle" font-size="11.5" fill="var(--muted)">${x}억</text>`;
+  h += `<text x="${m.l}" y="${H - 4}" font-size="11" fill="var(--muted)">공시가격 →</text><text x="${W - m.r}" y="${H - 4}" text-anchor="end" font-size="11" fill="var(--muted)">세액: 종부세+농특세, 만 원</text>`;
+  const cur = houses[0].price;
+  if (cur >= 10 && cur <= 60) h += `<line x1="${X(cur)}" x2="${X(cur)}" y1="${m.t}" y2="${H - m.b}" stroke="var(--text2)" stroke-dasharray="3 3"/><text x="${X(cur) + 4}" y="${m.t + 10}" font-size="11" fill="var(--text2)">입력값 ${cur}억</text>`;
+  const path = k => data.map((d, i) => `${i ? 'L' : 'M'}${X(d.x).toFixed(1)},${Y(d[k]).toFixed(1)}`).join('');
+  h += `<path d="${path('g')}" fill="none" stroke="var(--s1)" stroke-width="2"/><path d="${path('s')}" fill="none" stroke="var(--s2)" stroke-width="2"/>`;
+  const last = data[data.length - 1], ly1 = Y(last.g), ly2 = Y(last.s), sep = Math.abs(ly1 - ly2) < 14 ? (ly1 < ly2 ? -7 : 7) : 0;
+  h += `<text x="${W - m.r + 6}" y="${ly1 + 4 + sep}" font-size="12" fill="var(--text2)">일반</text><text x="${W - m.r + 6}" y="${ly2 + 4 - sep}" font-size="12" fill="var(--text2)">특례</text>`;
+  h += `<line id="xh" y1="${m.t}" y2="${H - m.b}" stroke="var(--muted)" visibility="hidden"/><circle id="c1" r="4.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/><circle id="c2" r="4.5" fill="var(--s2)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>`;
+  h += `<rect x="${m.l}" y="${m.t}" width="${Math.max(0, W - m.l - m.r)}" height="${H - m.t - m.b}" fill="transparent" id="hit"/>`;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = h;
+  const tip = $('tip');
+  $('hit').onmousemove = e => {
+    const px = e.clientX - svg.getBoundingClientRect().left, xv = 10 + (px - m.l) / (W - m.l - m.r) * 50;
+    const d = data[Math.max(0, Math.min(data.length - 1, Math.round((xv - 10) / 0.5)))];
+    $('xh').setAttribute('x1', X(d.x)); $('xh').setAttribute('x2', X(d.x));
+    $('c1').setAttribute('cx', X(d.x)); $('c1').setAttribute('cy', Y(d.g)); $('c2').setAttribute('cx', X(d.x)); $('c2').setAttribute('cy', Y(d.s));
+    ['xh', 'c1', 'c2'].forEach(id => $(id).setAttribute('visibility', 'visible'));
+    const better = d.s < d.g ? '특례' : d.s > d.g ? '일반' : '동일';
+    tip.innerHTML = `<b>공시 ${d.x}억</b><div class="r"><span><span class="dot" style="background:var(--s1)"></span> 일반</span><span>${Math.round(d.g).toLocaleString('ko-KR')}만</span></div><div class="r"><span><span class="dot" style="background:var(--s2)"></span> 특례</span><span>${Math.round(d.s).toLocaleString('ko-KR')}만</span></div><div class="r" style="color:var(--text2)"><span>유리</span><span>${better}${better !== '동일' ? ' (' + Math.round(Math.abs(d.g - d.s)).toLocaleString('ko-KR') + '만↓)' : ''}</span></div>`;
+    tip.style.display = 'block'; const tx = X(d.x) + 14; tip.style.left = (tx + 180 > W ? X(d.x) - 194 : tx) + 'px'; tip.style.top = '20px';
+  };
+  $('hit').onmouseleave = () => { tip.style.display = 'none'; ['xh', 'c1', 'c2'].forEach(id => $(id).setAttribute('visibility', 'hidden')); };
+  let cross = null;
+  for (let x = 12; x <= 100; x += 0.1) { const r = compute(input({price: x * 1e8})); if (r.special.total < r.general.total - 0.5) { cross = x; break; } }
+  $('cross').textContent = cross ? `이 조건에서는 공시가격 약 ${cross.toFixed(1)}억 원부터 1주택자 특례가 유리해집니다.` : '이 조건(나이·보유기간·지분)에서는 공시가격 100억 원까지 일반 공동명의가 계속 유리합니다.';
+  $('sweepTbl').innerHTML = T(['공시가격', '일반 (만 원)', '특례 (만 원)', '유리'], data.filter(d => d.x % 5 === 0).map(d => [d.x + '억', Math.round(d.g).toLocaleString('ko-KR'), Math.round(d.s).toLocaleString('ko-KR'), d.s < d.g - 0.01 ? '특례' : d.s > d.g + 0.01 ? '일반' : '동일']));
+}
+function niceStep(raw) { const p = Math.pow(10, Math.floor(Math.log10(raw))); const f = raw / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
+
+window.addEventListener('resize', () => { if (!$('chartCard').classList.contains('hidden')) drawChart(); });
+drawHouses(); render();
+</script>
+</body>
+</html>
